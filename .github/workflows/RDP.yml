@@ -9,9 +9,9 @@ jobs:
     - name: Download ngrok
       run: |
         Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
-        Expand-Archive ngrok.zip -DestinationPath $env:USERPROFILE
-        $ngrokPath = "$env:USERPROFILE\ngrok.exe"
-        Start-Process $ngrokPath -ArgumentList "authtoken YOUR_AUTH_TOKEN" 30fB2VRjpuPJCsuH1lEgIhW9zwK_81NEnDhx8yAz9cAc33w2K
+        Expand-Archive ngrok.zip -DestinationPath .
+        $ngrokPath = ".\ngrok.exe"
+        Start-Process $ngrokPath -ArgumentList "authtoken 30fB2VRjpuPJCsuH1lEgIhW9zwK_81NEnDhx8yAz9cAc33w2K"
 
     - name: Enable RDP
       run: |
@@ -19,4 +19,4 @@ jobs:
         net localgroup administrators kamel123 /add
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Start-Process "$env:USERPROFILE\ngrok.exe" -ArgumentList "tcp 3389"
+        Start-Process ".\ngrok.exe" -ArgumentList "tcp 3389"
