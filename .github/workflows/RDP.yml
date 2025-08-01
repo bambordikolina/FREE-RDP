@@ -1,0 +1,37 @@
+name: RDP
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: 🔽 Download & Setup ngrok
+      run: |
+        Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip" -OutFile "ngrok.zip"
+        Expand-Archive -Path "ngrok.zip" -DestinationPath "."
+        .\ngrok.exe authtoken ${{ secrets.NGROK_TOKEN }}
+
+    - name: 🖥️ Enable RDP & Create Admin User
+      run: |
+        net user kamel123 "MyStr0ngP@ssw0rd!" /add
+        net localgroup administrators kamel123 /add
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
+    - name: 🌐 Start ngrok & Log Public URL
+      run: |
+        Start-Process .\ngrok.exe -ArgumentList "tcp 3389"
+        Start-Sleep -Seconds 10
+        $response = Invoke-WebRequest -Uri "http://127.0.0.1:4040/api/tunnels"
+        $json = $response.Content | ConvertFrom-Json
+        $url = $json.tunnels[0].public_url
+        "🔗 ngrok RDP URL: $url" | Out-File -FilePath ngrok_url.txt -Encoding utf8
+
+    - name: 🕒 Keep Session Alive
+      run: |
+        $startTime = Get-Date
+        while ((Get-Date) -lt $startTime.AddHours(6)) {
+          Start-Sleep -Seconds 60
+        }
